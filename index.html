@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transfer data</title>
+</head>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    var selectedAll = false;
+    function deselectAll() {
+        selectedAll = true;
+        selectAll(); //Toggle
+    }
+
+    function selectAll() {
+        var newState = !selectedAll;
+        var checkboxes = document.getElementsByName("checked");
+        for (var i=0; i<checkboxes.length; i++) {
+        checkboxes[i].checked = newState;
+        }
+        selectedAll = newState;
+    }
+
+    function getCheckedBoxes(chkboxName) {
+        var checkboxes = document.getElementsByName(chkboxName);
+        var checked = [];
+        for (var i=0; i<checkboxes.length; i++) {
+            if (checkboxes[i].checked) {
+                var value = checkboxes[i].nextSibling.innerText;
+                checked.push(value);
+            }
+        }
+        return checked;
+    }
+
+    //Function to store the checked files into the txt file
+    async function storeData(){
+        try {
+            let checked = getCheckedBoxes('checked');
+            const result = await axios.post('/storeFileNames',{data:checked});
+            if(result){
+                console.log("data send");
+            }
+        } catch (error) {
+            console.log("error while store data");
+        }
+    }
+
+    //Funtion to get data from server
+    async function getData(){
+        try {
+            const result = await axios.get('http://192.168.0.100:8080/files/');
+            if (result.data) {
+                document.getElementById('html-container').innerHTML = result.data;
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
+
+    //Function to trigger download
+    async function startDownload(){
+        try {
+            const result = await axios.get('http://localhost:3000/startDownload');
+            if (result.data) {
+                console.log("download started");
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
+</script>
+<body>
+    <h3>Transfer Data</h3>
+    <button onclick="getData()">Get Data</button>
+    <button onclick="storeData()">Send Data</button>
+    <button onclick="startDownload()">start Download</button>
+
+    <h3>Fetched data</h3>
+    <div id="html-container"></div>
+</body>
+</html>
